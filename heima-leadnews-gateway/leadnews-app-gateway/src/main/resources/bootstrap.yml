@@ -1,0 +1,46 @@
+server:
+  port: 51601
+
+spring:
+  application:
+    name: leadnews-app-gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848 # nacos地址
+      config:
+        server-addr: localhost:8848
+        file-extension: yml
+    gateway:
+      routes: # 网关路由配置
+        - id: user
+          # uri: http://127.0.0.1:80 # 路由的目标地址 http就是固定地址
+          # 路由的目标地址 lb就是负载均衡，后面跟服务名称
+          uri: lb://leadnews-user
+          # 路由断言，也就是判断请求是否符合路由规则的条件
+          predicates:
+            - Path=/user/**
+          filters:
+            # 将用户请求的路径中的第一个路径去掉
+            # /user/v1/login -> /v1/login
+            - StripPrefix=1
+
+      globalcors: # 全局的跨域处理
+        # 解决options请求被拦截问题
+        add-to-simple-url-handler-mapping: true
+        corsConfigurations:
+          '[/**]':
+            # 允许哪些网站的跨域请求
+            allowedOrigins: "*"
+            allowedMethods: # 允许的跨域ajax的请求方式
+              - GET
+              - POST
+              - DELETE
+              - PUT
+              - OPTION
+            # 允许在请求中携带的头信息
+            allowedHeaders: "*"
+            # 是否允许携带cookie
+            allowCredentials: true
+            # 这次跨域检测的有效期
+            maxAge: 360000
